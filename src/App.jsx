@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { RiPencilLine, RiDeleteBinLine } from "react-icons/ri";
 import Swal from "sweetalert2";
+import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
 
-function App() {
+function App2() {
   const [books, setBooks] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
@@ -15,22 +15,16 @@ function App() {
   const [editBookId, setEditBookId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage] = useState(5); // Change this value to adjust items per page
 
-  useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const response = await axios.get(
-          "https://backendbook-blue.vercel.app/api/books"
-        );
-        setBooks(response.data);
-      } catch (error) {
-        console.error("Error fetching books:", error);
-      }
-    };
-
-    fetchBooks();
-  }, []);
+  const fetchBooks = async () => {
+    try {
+      const response = await axios.get("https://mern-flax.vercel.app/api/books");
+      setBooks(response.data);
+    } catch (error) {
+      console.error("Error fetching books:", error);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -44,7 +38,7 @@ function App() {
     e.preventDefault();
     try {
       if (editMode) {
-        await axios.put(`https://backendbook-blue.vercel.app/api/books/${editBookId}`, formData);
+        await axios.put(`https://mern-flax.vercel.app/api/books/${editBookId}`, formData);
         setEditMode(false);
         setEditBookId(null);
         fetchBooks();
@@ -54,7 +48,7 @@ function App() {
           text: "Book updated successfully!",
         });
       } else {
-        await axios.post("https://backendbook-blue.vercel.app/api/books", formData);
+        await axios.post("https://mern-flax.vercel.app/api/books", formData);
         fetchBooks();
         Swal.fire({
           icon: "success",
@@ -94,7 +88,7 @@ function App() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`https://backendbook-blue.vercel.app/api/books/${id}`);
+      await axios.delete(`https://mern-flax.vercel.app/api/books/${id}`);
       fetchBooks();
       Swal.fire({
         icon: "success",
@@ -116,8 +110,22 @@ function App() {
     setCurrentPage(1); // Reset current page when search query changes
   };
 
-  // Pagination logic...
-  
+  useEffect(() => {
+    fetchBooks();
+  }, []);
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentBooks = books
+    .filter((book) =>
+      book.title.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .slice(indexOfFirstItem, indexOfLastItem);
+
+  // Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
     <div className="container mt-4">
       <h1>Bookstore</h1>
@@ -196,7 +204,7 @@ function App() {
                 </tr>
               </thead>
               <tbody>
-                {books.map((book) => (
+                {currentBooks.map((book) => (
                   <tr key={book._id}>
                     <td>{book.title}</td>
                     <td>{book.author}</td>
@@ -222,7 +230,50 @@ function App() {
             {/* Pagination */}
             <nav aria-label="Page navigation">
               <ul className="pagination justify-content-center">
-                {/* Pagination buttons */}
+                <li
+                  className={`page-item ${
+                    currentPage === 1 ? "disabled" : ""
+                  }`}
+                >
+                  <button className="page-link" onClick={() => paginate(1)}>
+                    First
+                  </button>
+                </li>
+                {/* Display page numbers */}
+                {Array.from({
+                  length: Math.ceil(books.length / itemsPerPage),
+                }).map((_, index) => (
+                  <li
+                    key={index}
+                    className={`page-item ${
+                      currentPage === index + 1 ? "active" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => paginate(index + 1)}
+                    >
+                      {index + 1}
+                    </button>
+                  </li>
+                ))}
+                <li
+                  className={`page-item ${
+                    currentPage ===
+                    Math.ceil(books.length / itemsPerPage)
+                      ? "disabled"
+                      : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() =>
+                      paginate(Math.ceil(books.length / itemsPerPage))
+                    }
+                  >
+                    Last
+                  </button>
+                </li>
               </ul>
             </nav>
           </div>
@@ -232,7 +283,4 @@ function App() {
   );
 }
 
-export default App;
-
-
-
+export default App2;
