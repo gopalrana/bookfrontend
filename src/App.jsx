@@ -4,7 +4,7 @@ import { RiPencilLine, RiDeleteBinLine } from "react-icons/ri";
 import Swal from "sweetalert2";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
 
-function App2() {
+function App() {
   const [books, setBooks] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
@@ -283,4 +283,4 @@ function App2() {
   );
 }
 
-export default App2;
+export default App;
